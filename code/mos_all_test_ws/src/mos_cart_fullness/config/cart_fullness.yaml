@@ -1,0 +1,68 @@
+mos_cart_fullness:
+  ros__parameters:
+    enabled: true
+    camera_poll_seconds: 0.10
+    left_rgb_topic: "/left_arm_camera/color/image_raw"
+    right_rgb_topic: "/right_arm_camera/color/image_raw"
+    head_rgb_topic: "/head_camera/color/image_raw"
+    max_frame_age_sec: 2.0
+    max_pair_delta_sec: 0.15
+    verify_timeout_sec: 5.0
+    head_min_cart_score: 0.25
+    head_min_item_score: 0.25
+    head_full_threshold: 0.60
+    head_count_threshold: 5
+    head_x_margin_ratio: 0.15
+    head_y_start_ratio: 0.45
+    head_y_end_ratio: 0.90
+    head_min_item_roi_overlap: 0.10
+    # At grasp-point verification the wrist may see only the load item, not
+    # the whole cart. One valid item is enough for the wrist view.
+    verify_wrist_item_count_threshold: 1
+
+    waypoint_topic: "/cart_fullness/set_waypoint"
+    route_signal_topic: "/cart_fullness/route_signal"
+    status_topic: "/cart_fullness/status"
+
+    waypoint_camera_map: "left_start:left,right_start:right"
+    waypoint_cart_map: "left_start:cart_left,right_start:cart_right"
+
+    weights: ""
+    model_size: "nano"
+    conf: 0.15
+    iou: 0.45
+    device: "cuda"
+    # Detection is deliberately frame-local; the node always calls YOLO with
+    # track=False and does not maintain an IOU-locked cart target.
+    track: false
+
+    # best_1.pt: empty/loaded treatment carts A/B/C and green gown pack.
+    cart_class_ids: "0,1,2,3,4,5"
+    empty_cart_class_ids: "0,1,2"
+    loaded_cart_class_ids: "3,4,5"
+    item_class_ids: "9,10"
+    min_cart_score: 0.25
+    min_item_score: 0.25
+
+    full_threshold: 0.60
+    count_threshold: 1
+    count_operator: ">"
+    x_margin_ratio: 0.15
+    y_start_ratio: 0.55
+    y_end_ratio: 0.88
+    min_item_roi_overlap: 0.10
+
+    decision_window: 5
+    min_full_frames: 3
+    min_not_full_frames: 3
+
+    full_signal: "continue_to_next_waypoint_for_grasp"
+    not_full_signal: "skip_next_waypoint"
+    full_route_step_delta: 1
+    not_full_route_step_delta: 2
+    publish_status: true
+    disable_after_decision: true
+    preview: false
+    preview_after_decision: true
+    preview_window: "mos_cart_fullness"
+    preview_wait_ms: 1

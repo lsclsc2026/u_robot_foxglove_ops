@@ -1,0 +1,58 @@
+mos_route_manager:
+  ros__parameters:
+    # Keep false for every initial deployment and test. Start only through
+    # /mos_route_manager/start after localization and services are ready.
+    auto_start: false
+    goal_file: "/opt/slam/config/target_goals.yaml"
+    global_frame: "map"
+    initial_waypoint: "waypoint_left"
+    dirty_car_waypoint: "dirty_car"
+    clean_car_waypoint: "clean_car"
+    required_goal_names:
+      - "waypoint_left"
+      - "waypoint_left_end"
+      - "waypoint_right"
+      - "waypoint_right_end"
+      - "grasp_a"
+      - "dirty_car"
+      - "clean_car"
+
+    localization_topic: "/localization"
+    navigation_action_name: "/navigate_to_pose"
+    fullness_command_topic: "/cart_fullness/set_waypoint"
+    fullness_signal_topic: "/cart_fullness/route_signal"
+    pipeline_status_topic: "/mos_grasp_pipeline/status"
+    status_topic: "/mos_route_manager/status"
+
+    pipeline_start_service: "/mos_grasp_pipeline/start"
+    arm_run_task_service: "/mos_arm_controller/run_task"
+    fullness_reset_service: "/mos_cart_fullness/reset"
+    fullness_set_enabled_service: "/mos_cart_fullness/set_enabled"
+    nav_cmd_enabled_service: "/mos_arm_controller/set_nav_cmd_enabled"
+
+    verify_timeout_sec: 6.0
+    service_timeout_sec: 15.0
+    navigation_timeout_sec: 120.0
+    navigation_cancel_timeout_sec: 5.0
+    scan_half_width_m: 0.50
+
+    left_scan_zone_ids: ["scan_a", "scan_b"]
+    right_scan_zone_ids: ["scan_b", "scan_a"]
+
+    # map-frame x/y only. z and orientation are deliberately not used for
+    # corridor membership.
+    scan_a_start_x: 0.6621
+    scan_a_start_y: 0.2248
+    scan_a_end_x: 3.3063
+    scan_a_end_y: 0.8032
+    scan_a_cart_slot: "cart_slot_1"
+    scan_a_pickup_enabled: true
+    scan_a_grasp_waypoint: "grasp_a"
+
+    scan_b_start_x: 3.8406
+    scan_b_start_y: 0.7794
+    scan_b_end_x: 8.3138
+    scan_b_end_y: 0.7939
+    scan_b_cart_slot: "cart_slot_2"
+    scan_b_pickup_enabled: false
+    scan_b_grasp_waypoint: ""

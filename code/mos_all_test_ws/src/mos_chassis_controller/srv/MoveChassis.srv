@@ -1,0 +1,8 @@
+# Request: visual target x distance in body_link, or return to recorded origin.
+float32 target_x_m
+bool return_to_origin
+---
+# Response
+bool success
+string message
+float32 actual_distance_m

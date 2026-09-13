@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypesxsd="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>mos_grasp_pipeline</name>
+  <version>0.1.0</version>
+  <description>Task-level pipeline for two-stage visual grasping.</description>
+  <maintainer email="ww@todo.com">ww</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>mos_3d_object</depend>
+  <depend>mos_grasp_selector</depend>
+  <depend>mos_arm_controller</depend>
+  <depend>mos_chassis_controller</depend>
+
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

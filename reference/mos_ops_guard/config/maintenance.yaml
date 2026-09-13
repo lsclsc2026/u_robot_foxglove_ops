@@ -1,0 +1,38 @@
+version: 1
+command_timeout_seconds: 8
+topic_sample_seconds: 4
+large_file_bytes: 1073741824
+max_files_per_directory: 2000
+
+network:
+  remote_host: ""
+  ssh_port: 22
+  foxglove_port: 8765
+  connect_timeout_seconds: 1
+
+scan_directories:
+  - /var/lib/apport/coredump
+  - /var/crash
+  - /home/lumos/.local/share/Trash
+  - /root/.local/share/Trash
+  - /root/.ros/log
+  - /tmp
+
+critical_nodes: []
+critical_topics:
+  - /livox/lidar
+  - /livox/imu
+
+frequency_topics:
+  - /head_camera/color/image_raw
+  - /head_camera/depth/image_raw
+  - /livox/lidar
+  - /livox/imu
+  - /localization
+  - /Odometry
+
+vision_process_markers:
+  - "vision.launch.py"
+
+publish_report: false
+report_topic: /mos/monitor/maintenance_report

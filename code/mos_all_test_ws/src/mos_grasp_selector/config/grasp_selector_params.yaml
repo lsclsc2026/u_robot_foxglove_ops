@@ -1,0 +1,15 @@
+mos_grasp_selector:
+  ros__parameters:
+    detections_topic: "/vision/detections_3d"
+    grasp_tasks_topic: "/vision/grasp_tasks"
+    grasp_tasks_json_topic: "/vision/grasp_tasks_json"
+    publish_json_debug: true
+    publish_empty_tasks: true
+    publish_once_when_ready: true
+
+    enabled: false
+    active_task: "auto_treatment_cart_push"
+    rules_file: "config/grasp_selector_rules.yaml"
+    class_map_file: "config/class_map.yaml"
+    target_frame: "body_link"
+    target_class_ids: [6, 7, 8]

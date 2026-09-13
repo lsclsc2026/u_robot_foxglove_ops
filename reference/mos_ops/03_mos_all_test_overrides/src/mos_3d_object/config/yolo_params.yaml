@@ -1,0 +1,45 @@
+mos_3d_object:
+  ros__parameters:
+    config: "/opt/lumos/config/mos_sensor/example.yaml"
+    camera: "head"
+    # vision.launch.py resolves this to the installed best_1.pt in this package.
+    weights: ""
+    model_size: "nano"
+    enabled: false
+    target_classes: ""
+    conf: 0.15
+    iou: 0.45
+    device: "cuda"
+    min_depth_m: 0.15
+    max_depth_m: 12.0
+    depth_scale: 0.0
+    poll_seconds: 0.06
+    track: false
+    max_rgb_depth_delta_ms: 50.0
+
+    use_tf: false
+    target_frame: "body_link"
+    camera_frame: "head_camera_optical_frame"
+    tf_timeout_sec: 0.1
+    use_latest_tf: true
+
+    static_extrinsic_file: "config/static_extrinsic.yaml"
+    invert_static_extrinsic: false
+
+    detections_3d_topic: "/vision/detections_3d"
+    publish_detections_3d: true
+
+    # Prefer the MOS SDK's native ROS publishers. The Python fallback is much
+    # slower for full-resolution images and must not publish duplicate topics.
+    enable_sensor_ros_publisher: true
+    enable_python_rgb_publisher: false
+
+    # One MosSensorAdapter owns all three cameras. Head RGB-D remains the
+    # only 3D detection input; these RGB streams feed downstream consumers.
+    rgb_publish_seconds: 0.05
+    head_rgb_topic: "/head_camera/color/image_raw"
+    left_rgb_topic: "/left_arm_camera/color/image_raw"
+    right_rgb_topic: "/right_arm_camera/color/image_raw"
+    head_rgb_frame_id: "head_camera_optical_frame"
+    left_rgb_frame_id: "left_arm_camera_optical_frame"
+    right_rgb_frame_id: "right_arm_camera_optical_frame"

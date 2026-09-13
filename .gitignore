@@ -1,0 +1,28 @@
+# Generated workspaces and caches
+**/build/
+**/install/
+**/log/
+**/__pycache__/
+**/.pytest_cache/
+**/.cache/
+*.py[cod]
+*.pid
+core
+core.[0-9]*
+# Local credentials and machine-only overrides
+.env
+.env.local
+**/.ssh/
+id_rsa
+id_ed25519
+*.key
+*.pem
+# Archive duplicates and transient downloads
+*.tar
+*.tar.gz
+*.tgz
+*.tar.xz
+*.zip
+*.part
+.DS_Store
+# Original weights and third-party meshes/media are intentionally tracked.

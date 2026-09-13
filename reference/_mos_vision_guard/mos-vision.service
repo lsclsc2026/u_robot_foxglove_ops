@@ -1,0 +1,19 @@
+[Unit]
+Description=MOS 3D vision launch
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lumos
+ExecStartPre=/usr/bin/docker start lumos_dev
+ExecStart=/usr/bin/docker exec -i lumos_dev zsh -ic "source /tmp/mos_all_test_ws/install/setup.zsh; export ROS_DOMAIN_ID=111 ROS_LOCALHOST_ONLY=1; ulimit -c 0; exec ros2 launch mos_3d_object vision.launch.py"
+ExecStop=/usr/bin/docker exec lumos_dev bash /root/work_space/mos_vision_stop.sh
+Restart=no
+TimeoutStartSec=60
+TimeoutStopSec=25
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

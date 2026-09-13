@@ -1,0 +1,20 @@
+purepursuit_follower:
+  ros__parameters:
+    max_linear_vel: 0.2
+    max_angular_vel: 0.2
+    angle_threshold: 0.15
+    position_tolerance: 0.02
+    control_freq: 100.0
+
+    base_frame: "base_link"
+    odom_topic: "/localization"
+
+    alignment_decision_threshold: 1.570796327
+
+    kp_angular: 0.4
+    ki_angular: 0.0
+    kd_angular: 0.02
+
+    kp_linear: 0.4
+    ki_linear: 0.0
+    kd_linear: 0.02

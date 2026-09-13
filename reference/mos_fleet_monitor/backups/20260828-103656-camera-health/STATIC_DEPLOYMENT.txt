@@ -1,0 +1,21 @@
+2026-08-28 fixed camera deployment
+
+Active mapping:
+  HEAD_CAMERA=/dev/video0
+  LEFT_ARM_CAMERA=/dev/video6
+  RIGHT_ARM_CAMERA=/dev/video12
+
+Deployed file changed:
+  /root/work_space/mos_fleet_monitor/bin/_run_component.zsh
+
+Files restored from pre-change backup:
+  /root/work_space/mos_fleet_monitor/bin/mos-monitor-start
+  /root/work_space/mos_fleet_monitor/bin/_supervise_component.sh
+
+Removed from deployment:
+  /root/work_space/mos_fleet_monitor/config/mos_sensor.template.yaml
+
+Original pre-change backup:
+  local-before.tar.gz
+Remote pre-change backup:
+  /home/lumos/mos_fleet_monitor_backups/20260828-103657-camera-health/

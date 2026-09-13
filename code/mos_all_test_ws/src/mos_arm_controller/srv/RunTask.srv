@@ -1,0 +1,9 @@
+# Request: task name and visual target points.
+string task_name
+geometry_msgs/PointStamped left_point
+geometry_msgs/PointStamped right_point
+string target_frame
+---
+# Response
+bool success
+string message

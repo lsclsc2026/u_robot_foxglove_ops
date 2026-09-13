@@ -1,0 +1,42 @@
+# Static camera extrinsics.
+# Each entry means: p_target = target_T_camera * p_camera.
+# Quaternions below are stored as w,x,y,z; source values were provided as x,y,z,w.
+transforms:
+  - camera: "head"
+    target_frame: "body_link"
+    source_frame: "head_camera_optical_frame"
+    translation:
+      x: 0.25207
+      y: -0.0115
+      z: 0.14287
+    rotation:
+      w: 0.17106
+      x: -0.6861
+      y: 0.6861
+      z: -0.17106
+
+  - camera: "left_arm"
+    target_frame: "left_tcp"
+    source_frame: "left_arm_camera_optical_frame"
+    translation:
+      x: 0.1458
+      y: -0.093
+      z: 0.009
+    rotation:
+      w: 0.70711
+      x: 0.0
+      y: 0.70711
+      z: 0.0
+
+  - camera: "right_arm"
+    target_frame: "right_tcp"
+    source_frame: "right_arm_camera_optical_frame"
+    translation:
+      x: 0.1458
+      y: 0.093
+      z: -0.009
+    rotation:
+      w: 0.0
+      x: 0.70711
+      y: 0.0
+      z: 0.70711

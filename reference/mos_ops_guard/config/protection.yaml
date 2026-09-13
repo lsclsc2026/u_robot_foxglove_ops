@@ -1,0 +1,123 @@
+version: 1
+
+# 所有控制动作默认禁用。只有现场确认了官方接口后，才把相应动作的
+# enabled 改为 true。argv 会原样交给 subprocess，不经过 shell 展开。
+command_timeout_seconds: 15
+event_log:
+  max_bytes: 5242880
+  backups: 3
+
+recovery:
+  # 未配置物理急停读取接口时，P0 恢复必须同时提供 --onsite-confirmed。
+  allow_onsite_estop_fallback: true
+
+actions:
+  lock_tasks:
+    enabled: false
+    argv: []
+    description: "锁定业务任务入口（待接入协调器官方接口）"
+  unlock_tasks:
+    enabled: false
+    argv: []
+    description: "解除业务任务入口锁定（待接入协调器官方接口）"
+  cancel_navigation:
+    enabled: false
+    argv: []
+    description: "取消当前导航任务（待填官方 action cancel 接口）"
+  cancel_arm:
+    enabled: false
+    argv: []
+    description: "取消当前抓取任务（待填官方接口）"
+  cancel_scheduler:
+    enabled: false
+    argv: []
+    description: "取消调度任务（待填官方接口）"
+  cancel_state_machine:
+    enabled: false
+    argv: []
+    description: "取消协调器状态机任务（待填官方接口）"
+  zero_base:
+    enabled: false
+    argv: []
+    description: "底盘速度置零（待确认官方安全接口和持续时间）"
+  zero_arm:
+    enabled: false
+    argv: []
+    description: "机械臂输出置零/停止（待确认官方接口）"
+  hardware_estop:
+    enabled: false
+    argv: []
+    description: "厂家硬件急停接口尚未确认"
+  clear_software_protection:
+    enabled: false
+    argv: []
+    description: "清除软件保护锁存（待确认官方接口）"
+  physical_estop_released:
+    enabled: false
+    argv: []
+    description: "返回码 0 表示所有物理急停均已释放"
+
+common_cancel_actions:
+  - lock_tasks
+  - cancel_navigation
+  - cancel_arm
+  - cancel_scheduler
+  - cancel_state_machine
+  - zero_base
+
+p0_actions:
+  - hardware_estop
+  - zero_base
+  - zero_arm
+
+managed_subsystems:
+  navigation:
+    stop_action:
+      enabled: false
+      argv: []
+      description: "受控停止导航 launch（待确认）"
+    start_action:
+      enabled: false
+      argv: []
+      description: "恢复导航 launch（待确认）"
+  base:
+    stop_action:
+      enabled: false
+      argv: []
+      description: "隔离底盘输出（待确认）"
+    start_action:
+      enabled: false
+      argv: []
+      description: "恢复底盘使能（待确认）"
+  arm:
+    stop_action:
+      enabled: false
+      argv: []
+      description: "安全停止机械臂（待确认）"
+    start_action:
+      enabled: false
+      argv: []
+      description: "恢复机械臂控制器（待确认）"
+  vision:
+    status_action:
+      enabled: true
+      argv: ["/root/work_space/mos_vision_status.sh"]
+      description: "查看现有 Vision 守护进程状态"
+    stop_action:
+      enabled: true
+      argv: ["/root/work_space/mos_vision_stop.sh"]
+      description: "精确停止现有 Vision launch"
+    start_action:
+      enabled: false
+      argv: []
+      description: "启动 Vision；请配置为现场使用的受控启动器"
+  scheduler:
+    stop_action:
+      enabled: false
+      argv: []
+      description: "停止调度输出（待确认）"
+    start_action:
+      enabled: false
+      argv: []
+      description: "恢复调度（待确认）"
+

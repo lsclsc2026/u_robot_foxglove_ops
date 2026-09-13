@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/_common.sh"
+
+ensure_runtime
+exec 9>"${MOS_MONITOR_LOCK}"
+if ! flock -n 9; then
+  echo "另一项监控启停操作正在执行；本次不重复启动。"
+  exit 0
+fi
+
+start_component() {
+  local component="$1" settle_seconds="$2" pid
+  echo "启动 ${component}..."
+  nohup setsid "${COMPONENT_SUPERVISOR}" "${component}" \
+    </dev/null >/dev/null 2>&1 9>&- &
+  pid=$!
+  printf '%s\n' "${pid}" > "$(pid_file "${component}")"
+  sleep "${settle_seconds}"
+  if owned_component_is_live "${component}"; then
+    echo "  [已启动] ${component} pid=${pid}"
+    return 0
+  fi
+
+  rm -f -- "$(pid_file "${component}")"
+  conflicts="$(find_conflicts "${component}")"
+  if [[ -n "${conflicts}" ]]; then
+    echo "  [已存在] ${component} 的启动器已退出，但组件进程仍在；不重复启动。"
+    log_event \
+      "DETACHED component=${component} former_supervisor_pid=${pid} action=kept_running"
+    return 0
+  fi
+
+  echo "  [未启动] ${component} 在观察期内退出；其余组件继续运行。"
+  log_event \
+    "START_FAILED component=${component} supervisor_pid=${pid} action=peers_kept_running"
+  return 1
+}
+
+declare -A SETTLE_SECONDS=(
+  [vision]=10
+  [navigation]=5
+  [image_relay]=2
+  [status_logger]=2
+  [bridge]=3
+)
+
+started=0
+reused=0
+failed=0
+declare -A FAILED_COMPONENTS=()
+
+for component in "${COMPONENTS[@]}"; do
+  remove_stale_pid_file "${component}"
+
+  if owned_component_is_live "${component}"; then
+    pid="$(read_component_pid "${component}")"
+    echo "[复用受管] ${component} pid=${pid}"
+    reused=$((reused + 1))
+    continue
+  fi
+
+  conflicts="$(find_conflicts "${component}")"
+  if [[ -n "${conflicts}" ]]; then
+    echo "[复用外部] ${component} 已经运行，不重复启动："
+    while IFS= read -r line; do echo "             ${line}"; done <<< "${conflicts}"
+    log_event "REUSE_EXTERNAL component=${component} action=not_restarted"
+    reused=$((reused + 1))
+    continue
+  fi
+
+  if start_component "${component}" "${SETTLE_SECONDS[${component}]}"; then
+    started=$((started + 1))
+  else
+    failed=$((failed + 1))
+    FAILED_COMPONENTS[${component}]=1
+  fi
+done
+
+bridge_ready=0
+for _ in {1..15}; do
+  if bridge_port_is_listening; then
+    bridge_ready=1
+    break
+  fi
+  sleep 1
+done
+if (( bridge_ready == 0 )); then
+  echo "[警告] TCP ${MOS_BRIDGE_PORT} 尚未监听；已启动的其他组件保持运行。"
+  log_event \
+    "UNAVAILABLE component=bridge port=${MOS_BRIDGE_PORT} action=peers_kept_running"
+  if [[ -z "${FAILED_COMPONENTS[bridge]:-}" ]]; then
+    failed=$((failed + 1))
+    FAILED_COMPONENTS[bridge]=1
+  fi
+else
+  echo "Foxglove Bridge 可连接：${MOS_BRIDGE_ADDRESS:-127.0.0.1}:${MOS_BRIDGE_PORT:-8765}"
+fi
+
+echo "启动处理完成：新启动 ${started}，复用 ${reused}，未就绪 ${failed}。"
+if (( failed > 0 )); then
+  echo "未就绪组件不会导致其他组件停止；详见 ${MOS_MONITOR_EVENT_LOG}。"
+fi
+"${SCRIPT_DIR}/mos-monitor-status" || true
+exit 0

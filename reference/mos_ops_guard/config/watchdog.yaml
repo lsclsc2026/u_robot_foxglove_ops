@@ -1,0 +1,69 @@
+version: 1
+interval_seconds: 5
+startup_grace_seconds: 20
+disk_warning_percent: 85
+disk_critical_percent: 95
+
+auto_protect:
+  enabled: false
+
+critical_nodes:
+  # 节点名按实际 ros2 node list 结果补充。空列表表示不据此报警。
+  required: []
+
+# 每项是 ps 命令行中应出现的精确标记；空列表不会凭进程名猜测。
+critical_process_markers: []
+
+topics:
+  /head_camera/color/image_raw:
+    type: sensor_msgs/msg/Image
+    max_age_seconds: 5
+    severity: warning
+    required: false
+  /head_camera/depth/image_raw:
+    type: sensor_msgs/msg/Image
+    max_age_seconds: 5
+    severity: warning
+    required: false
+  /livox/lidar:
+    type: livox_ros_driver2/msg/CustomMsg
+    max_age_seconds: 3
+    severity: critical
+    required: true
+  /livox/imu:
+    type: sensor_msgs/msg/Imu
+    max_age_seconds: 3
+    severity: critical
+    required: true
+  /localization:
+    type: nav_msgs/msg/Odometry
+    max_age_seconds: 5
+    severity: critical
+    required: false
+  /localization_confidence:
+    type: std_msgs/msg/Float32
+    max_age_seconds: 5
+    severity: warning
+    required: false
+  /Odometry:
+    type: nav_msgs/msg/Odometry
+    max_age_seconds: 5
+    severity: warning
+    required: false
+
+file_watch:
+  - /var/lib/apport/coredump
+  - /var/crash
+
+network:
+  gateway_enabled: true
+  remote_host: ""
+  ping_timeout_seconds: 2
+
+motion_stall:
+  enabled: true
+  cmd_topic: /cmd_vel
+  odometry_topic: /Odometry
+  command_threshold: 0.03
+  movement_threshold_meters: 0.02
+  timeout_seconds: 8

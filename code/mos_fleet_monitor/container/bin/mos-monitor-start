@@ -1,0 +1,205 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/_common.sh"
+
+ensure_runtime
+exec 9>"${MOS_MONITOR_LOCK}"
+if ! flock -n 9; then
+  echo "另一项监控启停操作正在执行；本次不重复启动。"
+  exit 0
+fi
+
+start_component() {
+  local component="$1" settle_seconds="$2" pid
+  echo "启动 ${component}..."
+  nohup setsid "${COMPONENT_SUPERVISOR}" "${component}" \
+    </dev/null >/dev/null 2>&1 9>&- &
+  pid=$!
+  printf '%s\n' "${pid}" > "$(pid_file "${component}")"
+  sleep "${settle_seconds}"
+  if owned_component_is_live "${component}"; then
+    echo "  [已启动] ${component} pid=${pid}"
+    return 0
+  fi
+
+  rm -f -- "$(pid_file "${component}")"
+  conflicts="$(find_conflicts "${component}")"
+  if [[ -n "${conflicts}" ]]; then
+    echo "  [已存在] ${component} 的启动器已退出，但组件进程仍在；不重复启动。"
+    log_event \
+      "DETACHED component=${component} former_supervisor_pid=${pid} action=kept_running"
+    return 0
+  fi
+
+  echo "  [未启动] ${component} 在观察期内退出；其余组件继续运行。"
+  log_event \
+    "START_FAILED component=${component} supervisor_pid=${pid} action=peers_kept_running"
+  return 1
+}
+
+declare -A SETTLE_SECONDS=(
+  [vision]=10
+  [navigation]=5
+  [image_relay]=2
+  [status_logger]=2
+  [teleop]=3
+  [bridge]=3
+)
+
+if [[ "${MOS_MONITOR_MODE}" == "normal" ]]; then
+  if owned_component_is_live teleop || [[ -n "$(find_conflicts teleop)" ]]; then
+    echo "遥控组件仍在运行；为避免控制模式混用，本次普通启动已拒绝。" >&2
+    echo "请先执行 mos-monitor-stop，确认底盘停止后再启动普通监控。" >&2
+    exit 1
+  fi
+else
+  # The operations node is a guarded /cmd_vel publisher and intentionally
+  # reuses the native hardware controller instead of opening MosHal itself.
+  hardware_controller="$(
+    pgrep -af -- 'mos_hardware_controller_node' 2>/dev/null || true
+  )"
+  if [[ -z "${hardware_controller}" ]]; then
+    echo "未检测到原生底盘控制器；按原厂 launch 补启动..."
+    nohup setsid zsh -lc '
+      source /opt/ros/humble/setup.zsh
+      source /tmp/mos_all_test_ws/install/setup.zsh
+      export PKG_CONFIG_PATH="/opt/lumos/third_party/lib/pkgconfig:/opt/lumos/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+      export LD_LIBRARY_PATH="/opt/lumos/third_party/lib:/opt/lumos/lib:${LD_LIBRARY_PATH:-}"
+      export ROS_DOMAIN_ID=111 ROS_LOCALHOST_ONLY=1
+      exec ros2 launch mos_arm_controller hardware_controller.launch.py
+    ' </dev/null >>/tmp/mos_arm_controller_ops.log 2>&1 9>&- &
+    controller_ready=0
+    for _ in {1..20}; do
+      if pgrep -f -- 'mos_hardware_controller_node' >/dev/null 2>&1; then
+        controller_ready=1
+        break
+      fi
+      sleep 0.5
+    done
+    if (( controller_ready == 0 )); then
+      echo "原生底盘控制器未能在 10 秒内启动，拒绝 Foxglove 遥控。" >&2
+      tail -30 /tmp/mos_arm_controller_ops.log 2>/dev/null >&2 || true
+      exit 1
+    fi
+    echo "原生底盘控制器已就绪。"
+  fi
+fi
+
+started=0
+reused=0
+failed=0
+declare -A FAILED_COMPONENTS=()
+
+# A failed vendor vision child can leave its ros2 launch parent alive. Do not
+# reuse that shell: it has no camera publishers and blocks supervised retry.
+if ! pgrep -f -- '/mos_3d_object/lib/mos_3d_object/mos_3d_object_node' >/dev/null 2>&1; then
+  mapfile -t stale_vision_launchers < <(
+    pgrep -f -- '^/usr/bin/python3 /opt/ros/humble/bin/ros2 launch mos_3d_object vision.launch.py' 2>/dev/null || true
+  )
+  if (( ${#stale_vision_launchers[@]} > 0 )); then
+    echo "清理无视觉子节点的陈旧 launch：${stale_vision_launchers[*]}"
+    for stale_pid in "${stale_vision_launchers[@]}"; do
+      stale_pgid="$(ps -o pgid= -p "${stale_pid}" 2>/dev/null | tr -d ' ')"
+      [[ "${stale_pgid}" =~ ^[0-9]+$ ]] && kill -INT -- "-${stale_pgid}" 2>/dev/null || true
+    done
+    sleep 2
+    log_event "STALE_EXTERNAL component=vision pids=${stale_vision_launchers[*]} action=terminated"
+  fi
+fi
+
+# A ros2 launch parent can survive after all navigation children have died.
+# Such a parent publishes no map/TF/Nav2 data and must not make the stack look
+# reusable. Retire only launcher-only remnants; live core children are always
+# preserved as an external navigation stack.
+nav_core_processes="$(
+  pgrep -af -- '/fast_gicp/gicp_localization|/fast_lio/fastlio_mapping|nav2_controller/controller_server|nav2_planner/planner_server|nav2_bt_navigator/bt_navigator' 2>/dev/null || true
+)"
+if [[ -z "${nav_core_processes}" ]]; then
+  mapfile -t stale_nav_launchers < <(
+    pgrep -f -- '^/usr/bin/python3 /opt/ros/humble/bin/ros2 launch lumos_nav nav2_fastlio_bringup.launch.py' 2>/dev/null || true
+  )
+  if (( ${#stale_nav_launchers[@]} > 0 )); then
+    echo "清理无导航子节点的陈旧 launch：${stale_nav_launchers[*]}"
+    kill -TERM -- "${stale_nav_launchers[@]}" 2>/dev/null || true
+    for _ in {1..20}; do
+      still_live=0
+      for stale_pid in "${stale_nav_launchers[@]}"; do
+        kill -0 "${stale_pid}" 2>/dev/null && still_live=1
+      done
+      (( still_live == 0 )) && break
+      sleep 0.1
+    done
+    log_event "STALE_EXTERNAL component=navigation pids=${stale_nav_launchers[*]} action=terminated"
+  fi
+fi
+
+for component in "${COMPONENTS[@]}"; do
+  remove_stale_pid_file "${component}"
+
+  if owned_component_is_live "${component}"; then
+    pid="$(read_component_pid "${component}")"
+    echo "[复用受管] ${component} pid=${pid}"
+    reused=$((reused + 1))
+    continue
+  fi
+
+  conflicts="$(find_conflicts "${component}")"
+  if [[ -n "${conflicts}" ]]; then
+    echo "[复用外部] ${component} 已经运行，不重复启动："
+    while IFS= read -r line; do echo "             ${line}"; done <<< "${conflicts}"
+    log_event "REUSE_EXTERNAL component=${component} action=not_restarted"
+    reused=$((reused + 1))
+    continue
+  fi
+
+  if [[ "${MOS_MONITOR_MODE}" == "teleop" && "${component}" == navigation ]]; then
+    echo "[可选缺席] navigation 当前未运行；不会为 Foxglove 摇操另起导航。"
+    log_event "OPTIONAL_ABSENT component=navigation mode=teleop action=not_started"
+    continue
+  fi
+
+  if start_component "${component}" "${SETTLE_SECONDS[${component}]}"; then
+    started=$((started + 1))
+  elif [[ "${component}" == vision ]]; then
+    echo "  [重试] 相机可能刚完成 USB 重枚举，重新解析设备后再启动一次。"
+    sleep 2
+    if start_component "${component}" "${SETTLE_SECONDS[${component}]}"; then
+      started=$((started + 1))
+    else
+      failed=$((failed + 1))
+      FAILED_COMPONENTS[${component}]=1
+    fi
+  else
+    failed=$((failed + 1))
+    FAILED_COMPONENTS[${component}]=1
+  fi
+done
+
+bridge_ready=0
+for _ in {1..15}; do
+  if bridge_port_is_listening; then
+    bridge_ready=1
+    break
+  fi
+  sleep 1
+done
+if (( bridge_ready == 0 )); then
+  echo "[警告] TCP ${MOS_BRIDGE_PORT} 尚未监听；已启动的其他组件保持运行。"
+  log_event \
+    "UNAVAILABLE component=bridge port=${MOS_BRIDGE_PORT} action=peers_kept_running"
+  if [[ -z "${FAILED_COMPONENTS[bridge]:-}" ]]; then
+    failed=$((failed + 1))
+    FAILED_COMPONENTS[bridge]=1
+  fi
+else
+  echo "Foxglove Bridge 可连接：${MOS_BRIDGE_ADDRESS:-127.0.0.1}:${MOS_BRIDGE_PORT:-8765}"
+fi
+
+echo "启动处理完成：新启动 ${started}，复用 ${reused}，未就绪 ${failed}。"
+if (( failed > 0 )); then
+  echo "未就绪组件不会导致其他组件停止；详见 ${MOS_MONITOR_EVENT_LOG}。"
+fi
+"${SCRIPT_DIR}/mos-monitor-status" || true
+exit 0

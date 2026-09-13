@@ -1,0 +1,11 @@
+goal_arrival_monitor:
+  ros__parameters:
+    goal_topic: "/goal_pose"
+    odom_topic: "/odom"
+    arrival_topic: "/mosnav/arrival"
+
+    xy_tolerance: 0.25
+    yaw_tolerance: 0.25
+    hold_time_sec: 0.5
+    max_linear_speed: 0.05
+    max_angular_speed: 0.10

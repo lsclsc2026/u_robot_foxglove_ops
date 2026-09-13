@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/_common.sh"
+
+ensure_runtime
+healthy=1
+echo "MOS 监控栈状态："
+for component in "${COMPONENTS[@]}"; do
+  if owned_component_is_live "${component}"; then
+    pid="$(read_component_pid "${component}")"
+    echo "  [受管运行] ${component} pid=${pid}"
+  else
+    healthy=0
+    conflicts="$(find_conflicts "${component}")"
+    if [[ -n "${conflicts}" ]]; then
+      echo "  [外部运行] ${component} 未由总控管理，但会被启动脚本复用"
+      while IFS= read -r line; do echo "         ${line}"; done <<< "${conflicts}"
+    elif [[ -s "$(pid_file "${component}")" ]]; then
+      pid="$(read_component_pid "${component}" 2>/dev/null || printf '?')"
+      echo "  [已经退出] ${component} 原受管 pid=${pid}；其他组件不受影响"
+    else
+      echo "  [停止] ${component}"
+    fi
+  fi
+done
+
+if bridge_port_is_listening; then
+  echo "  [监听] TCP ${MOS_BRIDGE_PORT}"
+else
+  echo "  [未监听] TCP ${MOS_BRIDGE_PORT}"
+  healthy=0
+fi
+
+if [[ -s "${MOS_MONITOR_EVENT_LOG}" ]]; then
+  echo "最近生命周期日志（${MOS_MONITOR_EVENT_LOG}）："
+  tail -n 8 "${MOS_MONITOR_EVENT_LOG}" | sed 's/^/  /'
+fi
+
+if (( healthy )); then
+  echo "整体状态：全部受管组件正常。"
+else
+  echo "整体状态：部分可用；运行中的组件保持独立工作。"
+fi
+
+# Status is observational. A partial stack is reported in text rather than as
+# a command error so callers can keep SSH tunnels and healthy components alive.
+exit 0

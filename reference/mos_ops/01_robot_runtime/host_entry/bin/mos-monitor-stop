@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+CONTAINER_NAME="${MOS_CONTAINER_NAME:-lumos_dev}"
+docker inspect "${CONTAINER_NAME}" >/dev/null 2>&1 || {
+  echo "找不到容器 ${CONTAINER_NAME}。" >&2
+  exit 1
+}
+exec docker exec "${CONTAINER_NAME}" \
+  /root/work_space/mos_fleet_monitor/bin/mos-monitor-stop
+

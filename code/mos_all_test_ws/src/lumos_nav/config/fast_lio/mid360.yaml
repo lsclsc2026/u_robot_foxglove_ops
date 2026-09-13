@@ -1,0 +1,49 @@
+/**:
+    ros__parameters:
+        feature_extract_enable: false
+        point_filter_num: 4                # [走廊优化] 加大跳帧间隔，减少重复特征，降低长廊误匹配
+        max_iteration: 8                   # [走廊优化] 增加迭代次数，长廊退化方向需要更多轮收敛
+        filter_size_surf: 0.8              # [走廊优化] 增大降采样，走廊特征少需要更大体素去噪
+        filter_size_map: 0.8               # [走廊优化] 增大地图体素，大地图降低内存占用和噪点堆积
+        cube_side_length: 1000.0
+        runtime_pos_log_enable: false
+        map_file_path: "./test.pcd"
+
+        common:
+            lid_topic:  "/livox/lidar"
+            imu_topic:  "/livox/imu"
+            time_sync_en: false
+            time_offset_lidar_to_imu: 0.0
+
+        preprocess:
+            lidar_type: 1
+            scan_line:  4
+            blind: 0.8                      # [走廊优化] 过滤近处自车噪点，0.3->0.8
+            timestamp_unit: 3
+            scan_rate: 10
+
+        mapping:
+            acc_cov: 0.02                   # [走廊优化] 大幅降低加速度噪声→走廊退化方向高信任IMU平移
+            gyr_cov: 0.08                   # [走廊优化] 角速度保持适度，激光在走廊中仍能约束姿态
+            b_acc_cov: 0.001               # [走廊优化] 增大bias噪声→让估计器在激光回环时快速修正IMU bias
+            b_gyr_cov: 0.001               # [走廊优化] 同上，防止IMU积分误差长期累积
+            fov_degree:    360.0
+            det_range:     40.0             # [走廊优化] 减至40m，长廊不需要远距点，减少噪点和误匹配
+            extrinsic_est_en:  false
+            extrinsic_T: [ -0.011, -0.02329, 0.04412 ]
+            extrinsic_R: [ 1., 0., 0.,
+                            0., 1., 0.,
+                            0., 0., 1.]
+
+        publish:
+            path_en: true                # true: publish Path
+            effect_map_en: false         # true: publish Effects
+            map_en: true                 # true: publish Map cloud
+            scan_publish_en:  true       # false: close all the point cloud output
+            dense_publish_en: false      # false: low down the points number in a global-frame point clouds scan.
+            scan_bodyframe_pub_en: true  # true: output the point cloud scans in IMU-body-frame
+
+        pcd_save:
+            pcd_save_en: true
+            interval: -1                 # how many LiDAR frames saved in each pcd file; 
+                                        # -1 : all frames will be saved in ONE pcd file, may lead to memory crash when having too much frames.

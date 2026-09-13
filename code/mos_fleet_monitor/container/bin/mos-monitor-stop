@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/_common.sh"
+
+ensure_runtime
+internal="${1:-}"
+trap 'echo "收到中断请求；为避免半停状态，仍将完成本次受管进程清理。" >&2' INT TERM
+trap '' HUP
+if [[ "${internal}" != "--internal" ]]; then
+  exec 9>"${MOS_MONITOR_LOCK}"
+  if ! flock -n 9; then
+    echo "另一项监控启停操作正在执行，请稍后重试。" >&2
+    exit 75
+  fi
+fi
+
+declare -A STOP_PIDS=()
+
+process_group_is_live() {
+  local pgid="$1"
+  kill -0 -- "-${pgid}" 2>/dev/null
+}
+
+for component in "${STOP_COMPONENTS[@]}"; do
+  if owned_component_is_live "${component}"; then
+    pid="$(read_component_pid "${component}")"
+    pgid="$(ps -o pgid= -p "${pid}" 2>/dev/null | tr -d ' ' || true)"
+    if [[ "${pgid}" == "${pid}" ]]; then
+      STOP_PIDS[${component}]="${pid}"
+      echo "请求停止 ${component}（进程组 ${pid}）..."
+      kill -INT -- "-${pid}" 2>/dev/null || true
+    else
+      echo "拒绝停止 ${component}：PID ${pid} 不是独立进程组。" >&2
+    fi
+  fi
+done
+
+for _ in {1..6}; do
+  remaining=0
+  for component in "${!STOP_PIDS[@]}"; do
+    pid="${STOP_PIDS[${component}]}"
+    process_group_is_live "${pid}" && remaining=1
+  done
+  (( remaining == 0 )) && break
+  sleep 1
+done
+
+for component in "${!STOP_PIDS[@]}"; do
+  pid="${STOP_PIDS[${component}]}"
+  if process_group_is_live "${pid}"; then
+    echo "${component} 在 6 秒内未完全退出，发送 SIGTERM..."
+    kill -TERM -- "-${pid}" 2>/dev/null || true
+  fi
+done
+
+for _ in {1..4}; do
+  remaining=0
+  for component in "${!STOP_PIDS[@]}"; do
+    pid="${STOP_PIDS[${component}]}"
+    process_group_is_live "${pid}" && remaining=1
+  done
+  (( remaining == 0 )) && break
+  sleep 1
+done
+
+for component in "${!STOP_PIDS[@]}"; do
+  pid="${STOP_PIDS[${component}]}"
+  if process_group_is_live "${pid}"; then
+    echo "${component} 仍未退出，强制停止其受管进程组。"
+    kill -KILL -- "-${pid}" 2>/dev/null || true
+  fi
+done
+sleep 1
+
+cleanup_guard() {
+  local lock_dir="$1" pid_path="$2" status_path="$3" expected_pid="$4"
+  local recorded=""
+  if [[ -r "${lock_dir}/pid" ]]; then
+    read -r recorded < "${lock_dir}/pid" || true
+  elif [[ -r "${pid_path}" ]]; then
+    read -r recorded < "${pid_path}" || true
+  fi
+  if [[ "${recorded}" == "${expected_pid}" ]] && ! pid_is_live "${expected_pid}"; then
+    rm -f -- "${pid_path}" "${status_path}" "${lock_dir}/pid"
+    rmdir -- "${lock_dir}" 2>/dev/null || true
+  fi
+}
+
+if [[ -n "${STOP_PIDS[vision]:-}" ]]; then
+  cleanup_guard \
+    /run/lock/mos_vision.instance \
+    /run/mos_vision.pid \
+    /run/mos_vision.status \
+    "${STOP_PIDS[vision]}"
+fi
+if [[ -n "${STOP_PIDS[navigation]:-}" ]]; then
+  cleanup_guard \
+    /run/lock/mos_navigation.instance \
+    /run/mos_navigation.pid \
+    /run/mos_navigation.status \
+    "${STOP_PIDS[navigation]}"
+fi
+
+for component in "${ALL_COMPONENTS[@]}"; do
+  rm -f -- "$(pid_file "${component}")"
+done
+
+verification_failed=0
+echo "停止结果复核："
+for component in "${ALL_COMPONENTS[@]}"; do
+  conflicts="$(find_conflicts "${component}")"
+  if [[ -n "${conflicts}" ]]; then
+    if [[ -n "${STOP_PIDS[${component}]:-}" ]]; then
+      verification_failed=1
+      echo "  [受管残留] ${component}"
+    else
+      echo "  [保留外部] ${component}"
+    fi
+    while IFS= read -r line; do echo "         ${line}"; done <<< "${conflicts}"
+  else
+    echo "  [已停止] ${component}"
+  fi
+done
+if bridge_port_is_listening; then
+  if [[ -n "${STOP_PIDS[bridge]:-}" ]]; then
+    verification_failed=1
+    echo "  [受管残留] TCP ${MOS_BRIDGE_PORT} 仍在监听"
+  else
+    echo "  [保留外部] TCP ${MOS_BRIDGE_PORT} 仍在监听"
+  fi
+else
+  echo "  [已关闭] TCP ${MOS_BRIDGE_PORT}"
+fi
+
+if (( verification_failed )); then
+  echo "停止复核失败：本次受管进程仍有残留。" >&2
+  exit 1
+fi
+log_event "STOP_MANAGED action=external_components_preserved"
+echo "MOS 受管组件已停止；启动脚本未登记的外部组件保持不变。"

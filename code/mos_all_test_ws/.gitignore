@@ -1,0 +1,35 @@
+# Colcon
+/build/
+/install/
+/log/
+
+# Nested generated output
+**/build/
+**/install/
+**/log/
+
+# Python
+**/__pycache__/
+**/.pytest_cache/
+**/.cache/
+*.py[cod]
+
+# ROS and crash output
+*.log
+*.pid
+core
+core.*
+
+# Editor and OS
+**/.vscode/
+**/.idea/
+*.swp
+*~
+.DS_Store
+
+# Temporary packages
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.deb

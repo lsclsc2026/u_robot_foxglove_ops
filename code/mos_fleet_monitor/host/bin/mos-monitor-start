@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+CONTAINER_NAME="${MOS_CONTAINER_NAME:-lumos_dev}"
+CONTAINER_COMMAND="/root/work_space/mos_fleet_monitor/bin/mos-monitor-start"
+
+if ! docker inspect "${CONTAINER_NAME}" >/dev/null 2>&1; then
+  echo "找不到容器 ${CONTAINER_NAME}；请先用 lumos run 创建该容器。" >&2
+  exit 1
+fi
+
+if [[ "$(docker inspect -f '{{.State.Running}}' "${CONTAINER_NAME}")" != "true" ]]; then
+  echo "启动容器 ${CONTAINER_NAME}..."
+  docker start "${CONTAINER_NAME}" >/dev/null
+fi
+
+if ! docker exec "${CONTAINER_NAME}" test -x "${CONTAINER_COMMAND}"; then
+  echo "容器内尚未部署 MOS 监控栈：${CONTAINER_COMMAND}" >&2
+  exit 1
+fi
+
+exec docker exec \
+  -e MOS_MONITOR_MODE="${MOS_MONITOR_MODE:-normal}" \
+  -e MOS_NAV_RVIZ="${MOS_NAV_RVIZ:-false}" \
+  -e MOS_BRIDGE_PORT="${MOS_BRIDGE_PORT:-8765}" \
+  -e MOS_BRIDGE_ADDRESS="${MOS_BRIDGE_ADDRESS:-127.0.0.1}" \
+  "${CONTAINER_NAME}" "${CONTAINER_COMMAND}"

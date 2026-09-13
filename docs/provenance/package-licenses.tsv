@@ -1,0 +1,51 @@
+path	package	license_declaration
+code/mos_all_test_ws/src/lumos_nav/package.xml	lumos_nav	MIT
+code/mos_all_test_ws/src/mos_3d_object/package.xml	mos_3d_object	Proprietary
+code/mos_all_test_ws/src/mos_arm_controller/package.xml	mos_arm_controller	Apache-2.0
+code/mos_all_test_ws/src/mos_cart_fullness/package.xml	mos_cart_fullness	Proprietary
+code/mos_all_test_ws/src/mos_chassis_controller/package.xml	mos_chassis_controller	Apache-2.0
+code/mos_all_test_ws/src/mos_coordinator/package.xml	mos_coordinator	TODO: License declaration
+code/mos_all_test_ws/src/mos_grasp_pipeline/package.xml	mos_grasp_pipeline	Apache-2.0
+code/mos_all_test_ws/src/mos_grasp_selector/package.xml	mos_grasp_selector	Proprietary
+code/mos_all_test_ws/src/mos_route_manager/package.xml	mos_route_manager	Proprietary
+code/mos_all_test_ws/src/navigation2/nav2_amcl/package.xml	nav2_amcl	LGPL-2.1-or-later
+code/mos_all_test_ws/src/navigation2/nav2_behavior_tree/package.xml	nav2_behavior_tree	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_behaviors/package.xml	nav2_behaviors	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_bringup/package.xml	nav2_bringup	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_bt_navigator/package.xml	nav2_bt_navigator	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_collision_monitor/package.xml	nav2_collision_monitor	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_common/package.xml	nav2_common	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_constrained_smoother/package.xml	nav2_constrained_smoother	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_controller/package.xml	nav2_controller	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_core/package.xml	nav2_core	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_costmap_2d/package.xml	nav2_costmap_2d	BSD-3-Clause; Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_dwb_controller/costmap_queue/package.xml	costmap_queue	BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_dwb_controller/dwb_core/package.xml	dwb_core	BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_dwb_controller/dwb_critics/package.xml	dwb_critics	BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_dwb_controller/dwb_msgs/package.xml	dwb_msgs	BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_dwb_controller/dwb_plugins/package.xml	dwb_plugins	BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_dwb_controller/nav2_dwb_controller/package.xml	nav2_dwb_controller	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_dwb_controller/nav_2d_msgs/package.xml	nav_2d_msgs	BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_dwb_controller/nav_2d_utils/package.xml	nav_2d_utils	BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_graceful_controller/package.xml	nav2_graceful_controller	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_lifecycle_manager/package.xml	nav2_lifecycle_manager	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_map_server/package.xml	nav2_map_server	Apache-2.0; BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_mppi_controller/package.xml	nav2_mppi_controller	MIT
+code/mos_all_test_ws/src/navigation2/nav2_msgs/package.xml	nav2_msgs	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_navfn_planner/package.xml	nav2_navfn_planner	Apache-2.0; BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_planner/package.xml	nav2_planner	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_regulated_pure_pursuit_controller/package.xml	nav2_regulated_pure_pursuit_controller	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_rotation_shim_controller/package.xml	nav2_rotation_shim_controller	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_route/package.xml	nav2_route	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_rviz_plugins/package.xml	nav2_rviz_plugins	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_simple_commander/package.xml	nav2_simple_commander	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_smac_planner/package.xml	nav2_smac_planner	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_smoother/package.xml	nav2_smoother	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_system_tests/package.xml	nav2_system_tests	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_theta_star_planner/package.xml	nav2_theta_star_planner	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_util/package.xml	nav2_util	Apache-2.0; BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_velocity_smoother/package.xml	nav2_velocity_smoother	Apache-2.0
+code/mos_all_test_ws/src/navigation2/nav2_voxel_grid/package.xml	nav2_voxel_grid	BSD-3-Clause
+code/mos_all_test_ws/src/navigation2/nav2_waypoint_follower/package.xml	nav2_waypoint_follower	Apache-2.0
+code/mos_all_test_ws/src/navigation2/navigation2/package.xml	navigation2	Apache-2.0
+code/mos_fleet_monitor/ops_extension/mos_ops_control/package.xml	mos_ops_control	Apache-2.0

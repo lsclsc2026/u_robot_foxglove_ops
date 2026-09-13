@@ -1,0 +1,85 @@
+class_map:
+  0:
+    yolo_name: "empty_cart_A"
+    zh_name: "A型空车"
+    type: "scene"
+  1:
+    yolo_name: "empty_cart_B"
+    zh_name: "B型空车"
+    type: "scene"
+  2:
+    yolo_name: "empty_cart_C"
+    zh_name: "C型空车"
+    type: "scene"
+  3:
+    yolo_name: "loaded_cart_A"
+    zh_name: "A型载物车"
+    type: "scene"
+  4:
+    yolo_name: "loaded_cart_B"
+    zh_name: "B型载物车"
+    type: "scene"
+  5:
+    yolo_name: "loaded_cart_C"
+    zh_name: "C型载物车"
+    type: "scene"
+  6:
+    yolo_name: "cart_handle_A"
+    zh_name: "A型车把手"
+    type: "grasp_part"
+  7:
+    yolo_name: "cart_handle_B"
+    zh_name: "B型车把手"
+    type: "grasp_part"
+  8:
+    yolo_name: "cart_handle_C"
+    zh_name: "C型车把手"
+    type: "grasp_part"
+  9:
+    yolo_name: "green_gown_pack"
+    zh_name: "绿色包裹"
+    type: "object"
+  10:
+    yolo_name: "scope_box"
+    zh_name: "腔镜盒"
+    type: "object"
+  11:
+    yolo_name: "bare_trash_cart_A"
+    zh_name: "A型裸垃圾车"
+    type: "scene"
+  12:
+    yolo_name: "bare_trash_cart_B"
+    zh_name: "B型裸垃圾车"
+    type: "scene"
+  13:
+    yolo_name: "bagged_trash_cart_A"
+    zh_name: "A型装袋垃圾车"
+    type: "scene"
+  14:
+    yolo_name: "bagged_trash_cart_B"
+    zh_name: "B型装袋垃圾车"
+    type: "scene"
+  15:
+    yolo_name: "empty_bag_opening"
+    zh_name: "空垃圾袋口"
+    type: "state_part"
+  16:
+    yolo_name: "full_bag_opening"
+    zh_name: "满垃圾袋口"
+    type: "state_part"
+  17:
+    yolo_name: "half_bag_opening"
+    zh_name: "半满垃圾袋口"
+    type: "state_part"
+  18:
+    yolo_name: "trash_cart_top_bar"
+    zh_name: "垃圾车顶部横杆"
+    type: "grasp_part"
+  19:
+    yolo_name: "elevator_btn_up"
+    zh_name: "电梯上行按钮"
+    type: "button"
+  20:
+    yolo_name: "elevator_btn_down"
+    zh_name: "电梯下行按钮"
+    type: "button"

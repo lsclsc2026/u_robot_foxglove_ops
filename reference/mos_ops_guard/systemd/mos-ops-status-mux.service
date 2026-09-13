@@ -1,0 +1,14 @@
+[Unit]
+Description=MOS operations status alarm multiplexer
+After=network.target
+
+[Service]
+Type=simple
+Environment=ROS_DOMAIN_ID=111
+Environment=ROS_LOCALHOST_ONLY=1
+ExecStart=/bin/bash -lc 'source /opt/ros/humble/setup.bash && exec /root/work_space/mos_ops_guard/bin/mos-status-mux --ros-args --disable-external-lib-logs'
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

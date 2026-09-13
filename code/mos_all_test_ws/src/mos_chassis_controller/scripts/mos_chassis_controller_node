@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+from mos_chassis_controller.ww_test_chassis import main
+
+
+if __name__ == "__main__":
+    main()

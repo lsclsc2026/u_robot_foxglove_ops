@@ -1,0 +1,12 @@
+# 底盘移动服务
+# target_x_m: 相机到把手的距离（米），用于计算前进距离
+# return_to_origin: 是否是第二次调用（后退到原位）
+
+float64 target_x_m
+bool return_to_origin
+
+---
+
+bool success
+string message
+float64 actual_distance_m

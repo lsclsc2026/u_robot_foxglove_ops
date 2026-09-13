@@ -1,0 +1,36 @@
+{
+  "programs": [],
+  "streams": [
+    {
+      "codec_name": "h264",
+      "codec_type": "video",
+      "width": 1914,
+      "height": 908,
+      "avg_frame_rate": "30/1"
+    },
+    {
+      "codec_name": "aac",
+      "codec_type": "audio",
+      "avg_frame_rate": "0/0"
+    }
+  ],
+  "format": {
+    "duration": "35.109000",
+    "size": "7253989"
+  },
+  "original_file": "foxglove运维.mp4",
+  "original_sha256": "762622b943be46659a93edda22d18a001c847d6bf20235164a34e0d7cb631c98",
+  "asset": "foxglove-ops-demo.mp4",
+  "sha256": "d55f35fd1c36d789df966e389793396a8d075a47ba693fdbd470acde62866898",
+  "playback_speed": 1,
+  "cover_time_seconds": 15,
+  "encoding": {
+    "video": "libx264",
+    "crf": 25,
+    "preset": "medium",
+    "pixel_format": "yuv420p",
+    "faststart": true,
+    "audio": "aac 96k if present"
+  },
+  "release_url": "https://github.com/lsclsc2026/u_robot_foxglove_ops/releases/tag/v0.1.0-review"
+}

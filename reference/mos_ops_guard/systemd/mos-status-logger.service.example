@@ -1,0 +1,15 @@
+[Unit]
+Description=MOS normal 60-second status summary
+After=network.target mos-ops-status-mux.service
+Wants=mos-ops-status-mux.service
+
+[Service]
+Type=simple
+Environment=ROS_DOMAIN_ID=111
+Environment=ROS_LOCALHOST_ONLY=1
+ExecStart=/bin/bash -lc 'source /opt/ros/humble/setup.bash && exec /usr/bin/python3 /root/work_space/mos_status_logger.py --ros-args --disable-external-lib-logs -r /mos/monitor/status_log:=/mos/monitor/status_normal'
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

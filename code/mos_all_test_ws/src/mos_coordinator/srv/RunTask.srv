@@ -1,0 +1,15 @@
+# 机械臂任务服务
+# task_name: 任务名称 (grasp, place, elevator)
+# left_point: 左手目标点
+# right_point: 右手目标点
+# target_frame: 目标坐标系
+
+string task_name
+geometry_msgs/PointStamped left_point
+geometry_msgs/PointStamped right_point
+string target_frame
+
+---
+
+bool success
+string message

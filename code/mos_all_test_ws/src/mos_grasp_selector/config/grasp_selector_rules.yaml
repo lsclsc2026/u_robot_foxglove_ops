@@ -1,0 +1,176 @@
+tasks:
+  auto_treatment_cart_push:
+    enabled: true
+    task_name: "auto_treatment_cart_push"
+    # 6、7、8 是同等候选类别；每个类别必须单独形成一对把手。
+    target_class_ids: [6, 7, 8]
+    target_class_id: 6
+    target_class_name: "自动治疗车把手"
+    required_points: 2
+    grasp_mode: "dual_arm_sync"
+
+    trigger:
+      mode: "none"
+
+    selection:
+      mode: "nearest"
+      max_distance_m: 0.0
+      min_score: 0.0
+
+    role:
+      mode: "split_by_y"
+      negative_y: "right_handle"
+      positive_y: "left_handle"
+
+    position:
+      mode: "detected"
+
+    stability:
+      enabled: true
+      window: 5
+      min_frames: 3
+      filter: "median"
+      outlier_distance_m: 0.10
+      max_std_m: 0.03
+      max_range_m: 0.06
+
+    publish_once_when_ready: true
+
+  treatment_cart_A_push:
+    enabled: true
+    task_name: "treatment_cart_A_push"
+    target_class_id: 6
+    target_class_name: "A型车把手"
+    required_points: 2
+    grasp_mode: "dual_arm_sync"
+
+    trigger:
+      mode: "none"
+
+    selection:
+      mode: "nearest"
+      max_distance_m: 0.0
+      min_score: 0.0
+
+    role:
+      mode: "split_by_y"
+      negative_y: "right_handle"
+      positive_y: "left_handle"
+
+    position:
+      mode: "detected"
+
+    stability:
+      enabled: true
+      window: 5
+      min_frames: 3
+      filter: "median"
+      outlier_distance_m: 0.10
+      max_std_m: 0.03
+      max_range_m: 0.06
+
+    publish_once_when_ready: true
+
+  treatment_cart_B_push:
+    enabled: true
+    task_name: "treatment_cart_B_push"
+    target_class_id: 7
+    target_class_name: "B型车把手"
+    required_points: 2
+    grasp_mode: "dual_arm_sync"
+
+    trigger:
+      mode: "none"
+
+    selection:
+      mode: "nearest"
+      max_distance_m: 0.0
+      min_score: 0.0
+
+    role:
+      mode: "split_by_y"
+      negative_y: "right_handle"
+      positive_y: "left_handle"
+
+    position:
+      mode: "detected"
+
+    stability:
+      enabled: true
+      window: 5
+      min_frames: 3
+      filter: "median"
+      outlier_distance_m: 0.10
+      max_std_m: 0.03
+      max_range_m: 0.06
+
+    publish_once_when_ready: true
+
+  treatment_cart_C_push:
+    enabled: true
+    task_name: "treatment_cart_C_push"
+    target_class_id: 8
+    target_class_name: "C型车把手"
+    required_points: 2
+    grasp_mode: "dual_arm_sync"
+
+    trigger:
+      mode: "none"
+
+    selection:
+      mode: "nearest"
+      max_distance_m: 0.0
+      min_score: 0.0
+
+    role:
+      mode: "split_by_y"
+      negative_y: "right_handle"
+      positive_y: "left_handle"
+
+    position:
+      mode: "detected"
+
+    stability:
+      enabled: true
+      window: 5
+      min_frames: 3
+      filter: "median"
+      outlier_distance_m: 0.10
+      max_std_m: 0.03
+      max_range_m: 0.06
+
+    publish_once_when_ready: true
+
+  trash_cart_top_bar_push:
+    enabled: true
+    task_name: "trash_cart_top_bar_push"
+    target_class_id: 18
+    target_class_name: "垃圾车顶部横杆"
+    required_points: 1
+    grasp_mode: "single_arm_or_base_push"
+
+    trigger:
+      mode: "none"
+
+    selection:
+      mode: "nearest"
+      max_distance_m: 0.0
+      min_score: 0.0
+
+    role:
+      mode: "single"
+      name: "top_bar"
+
+    position:
+      mode: "detected"
+
+    stability:
+      enabled: true
+      window: 5
+      min_frames: 3
+      filter: "median"
+      outlier_distance_m: 0.10
+      max_std_m: 0.03
+      max_range_m: 0.06
+
+    publish_once_when_ready: true
